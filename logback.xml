@@ -1,0 +1,37 @@
+<configuration>
+
+    <property name="LOG_DIR" value="${user.dir}/logs/"/>
+    <property name="LOGGER_LENGTH" value="30"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!--filter debug-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{ISO8601} %-5p [%t{10}] %logger{${LOGGER_LENGTH}} %F\(%line\) - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="fileAppender.actor" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}actor/actor.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}actor/actor.log.%d{yyyy-MM-dd-HH}</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{ISO8601} %-5p [%t{10}] %logger{${LOGGER_LENGTH}} %F\(%line\) - %m%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <logger name="actor-kt" level="TRACE">
+        <appender-ref ref="fileAppender.actor"/>
+    </logger>
+
+
+    <root level="TRACE">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

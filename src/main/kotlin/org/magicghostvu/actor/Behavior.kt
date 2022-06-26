@@ -1,10 +1,19 @@
 package org.magicghostvu.actor
 
+import kotlinx.coroutines.channels.SendChannel
 import org.magicghostvu.actor.timer.TimerManData
 
-open class Behavior<in T>
 
-abstract class AbstractBehavior<T>() : Behavior<T>() {
+class MActorRef<in Message>(private val internalChannel: SendChannel<Message>) {
+    public suspend fun tell(message: Message) {
+        internalChannel.send(message)
+    }
+}
+open class Behavior<in T>{
+
+}
+
+abstract class AbstractBehaviour<T>() : Behavior<T>() {
     abstract suspend fun onReceive(message: T): Behavior<T>
 }
 

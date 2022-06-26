@@ -5,11 +5,11 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!--filter debug-->
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+        <!--<filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>DEBUG</level>
             <onMatch>DENY</onMatch>
             <onMismatch>ACCEPT</onMismatch>
-        </filter>
+        </filter>-->
         <encoder>
             <pattern>%d{ISO8601} %-5p [%t{10}] %logger{${LOGGER_LENGTH}} %F\(%line\) - %m%n</pattern>
         </encoder>
@@ -26,7 +26,7 @@
     </appender>
 
 
-    <logger name="actor-kt" level="TRACE">
+    <logger name="actor-kt" level="INFO">
         <appender-ref ref="fileAppender.actor"/>
     </logger>
 

@@ -61,7 +61,7 @@ class TimerManData<T>(private val scope: ActorScope<Any>) {
 
         val job = scope.launch {
             delay(delayMillis)
-            logger.info("exe timer")
+            //logger.info("exe timer")
             scope.channel.send(
                 messageToSend
             )
@@ -92,7 +92,6 @@ class TimerManData<T>(private val scope: ActorScope<Any>) {
 
         val job = scope.launch {
             delay(initDelay)
-            scope.channel.send(messageToSend)
             while (true) {
                 scope.channel.send(messageToSend)
                 delay(period)
@@ -124,4 +123,10 @@ class TimerManData<T>(private val scope: ActorScope<Any>) {
         logger.info("cancel all called")
     }
 
+    public fun cancel(key: Any) {
+        removeKey(key, true)
+    }
+
 }
+
+data class DelayedMessage<T>(val message: T, val keyTimer: Any, val generationAtCreate: Int)

@@ -12,5 +12,5 @@ sealed class TimerData(private val key: Any, val job: Job, private val timerMan:
 class SingleTimerData(key: Any, job: Job, timerMan: TimerManData<*>) : TimerData(key, job, timerMan)
 
 
-// xoá khi bị dè hoặc là bị huỷ
+// xoá khi bị đè hoặc là bị huỷ
 class PeriodicTimerData(key: Any, job: Job, timerMan: TimerManData<*>) : TimerData(key, job, timerMan)

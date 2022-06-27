@@ -4,16 +4,17 @@ import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.magicghostvu.mlogger.MLogger
+import org.magicghostvu.mlogger.ActorLogger
+
 
 // not thread safe
 //các hàm phải được gọi bên trong actor
 @OptIn(ObsoleteCoroutinesApi::class)
-class TimerManData<T>(private val scope: ActorScope<Any>) {
+class TimerManData<T>(private val scope: ActorScope<Any>, val debug:Boolean) {
     private val idToTimerData = mutableMapOf<Any, TimerData>()
     private val idToGeneration = mutableMapOf<Any, Int>()
 
-    private val logger = MLogger.logger
+    private val logger = ActorLogger.logger
 
     // todo: thêm các hàm start single timer/ schedule ...
     //  cancel with key, cancel all...
@@ -125,6 +126,9 @@ class TimerManData<T>(private val scope: ActorScope<Any>) {
 
     public fun cancel(key: Any) {
         removeKey(key, true)
+        if(debug){
+            logger.info("timer with key {} canceled", key)
+        }
     }
 
 }

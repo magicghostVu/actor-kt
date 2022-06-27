@@ -7,7 +7,8 @@ import org.magicghostvu.actor.Behavior
 import org.magicghostvu.actor.Behaviors
 
 import org.magicghostvu.actor.Behaviors.spawn
-import org.magicghostvu.mlogger.MLogger
+import org.magicghostvu.mlogger.ActorLogger
+
 
 sealed class Msg
 class Msg1 : Msg()
@@ -15,7 +16,7 @@ class Msg2(val from:String) : Msg()
 class Msg3 : Msg()
 
 class State1(var i: Int) : AbstractBehaviour<Msg>() {
-    private val logger = MLogger.logger
+    private val logger = ActorLogger.logger
     override suspend fun onReceive(message: Msg): Behavior<Msg> {
         logger.info("msg {} come", message)
         if (message is Msg1) {
@@ -31,7 +32,7 @@ class State1(var i: Int) : AbstractBehaviour<Msg>() {
 }
 
 class State2(var d: Double) : AbstractBehaviour<Msg>() {
-    private val logger = MLogger.logger
+    private val logger = ActorLogger.logger
     override suspend fun onReceive(message: Msg): Behavior<Msg> {
         return when (message) {
             is Msg1 -> {
@@ -58,8 +59,8 @@ class State2(var d: Double) : AbstractBehaviour<Msg>() {
 
 fun main(arr: Array<String>) {
     runBlocking {
-        val logger = MLogger.logger
-        val actorRef = spawn {
+        val logger = ActorLogger.logger
+        val actorRef = spawn(true) {
             State1(0)
         }
 

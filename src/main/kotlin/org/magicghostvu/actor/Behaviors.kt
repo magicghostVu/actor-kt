@@ -8,7 +8,7 @@ import kotlinx.coroutines.channels.consumeEach
 import org.magicghostvu.actor.timer.DelayedMessage
 import org.magicghostvu.actor.timer.SingleTimerData
 import org.magicghostvu.actor.timer.TimerManData
-import org.magicghostvu.mlogger.MLogger
+import org.magicghostvu.mlogger.ActorLogger
 
 object Behaviors {
 
@@ -29,12 +29,12 @@ object Behaviors {
     }
 
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun <T> CoroutineScope.spawn(factory: () -> Behavior<T>): MActorRef<T> {
+    fun <T> CoroutineScope.spawn(debug: Boolean = false, factory: () -> Behavior<T>): MActorRef<T> {
         val internalChannel = actor<Any>(capacity = 10000) {
 
-            val logger = MLogger.logger
+            val logger = ActorLogger.logger
 
-            val timerMan = TimerManData<T>(this)
+            val timerMan = TimerManData<T>(this, debug)
             var state = factory()
 
 
@@ -62,14 +62,19 @@ object Behaviors {
                     val (msg, key, genFromMessage) = dMsg
                     if (!timerMan.keyExist(key)) {
                         // timer này đã bị huỷ, không xử lý message này
-                        logger.debug("msg {} come but key not exist, ignore", msg)
+                        if (debug) {
+                            logger.debug("msg {} come but key not exist, ignore", msg)
+                        }
+
                         return@consumeEach
                     }
                     val currentGenThisKey = timerMan.getCurrentGeneration(key)
                     // timer này bị huỷ khi message đã được gửi
                     // không xử lý
                     if (currentGenThisKey != genFromMessage) {
-                        logger.debug("msg {} come but generation outdated, ignore", msg)
+                        if (debug) {
+                            logger.debug("msg {} come but generation outdated, ignore", msg)
+                        }
                         return@consumeEach
                     }
 
@@ -89,7 +94,10 @@ object Behaviors {
                 }
 
 
-                logger.debug("msg internal come {}", messageToProcess)
+                if (debug) {
+                    logger.debug("msg internal come {}", messageToProcess)
+                }
+
 
                 // impossible
                 // but a bug here so we will fix this

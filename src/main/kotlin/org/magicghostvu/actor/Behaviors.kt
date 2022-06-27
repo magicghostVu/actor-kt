@@ -9,6 +9,7 @@ import org.magicghostvu.actor.timer.DelayedMessage
 import org.magicghostvu.actor.timer.SingleTimerData
 import org.magicghostvu.actor.timer.TimerManData
 import org.magicghostvu.mlogger.ActorLogger
+import kotlin.math.log
 
 object Behaviors {
 
@@ -115,7 +116,10 @@ object Behaviors {
                 // nếu scope này được dùng chung ở đâu đó
                 // thì nên xem xét kỹ lại code
                 if (tmp == stopped<T>()) {
-                    this.cancel()
+                    if (debug) {
+                        logger.debug("stopped come, cancel the channel")
+                    }
+                    this.channel.cancel()
                     return@consumeEach
                 }
 
@@ -127,7 +131,10 @@ object Behaviors {
                 // recheck with same and stopped here???
                 // sau chỗ này state bắt buộc phải là AbstractBehavior
                 if (tmp == stopped<T>()) {
-                    this.cancel()
+                    if (debug) {
+                        logger.debug("cancel channel after unwrap timer behavior")
+                    }
+                    this.channel.cancel()
                     return@consumeEach
                 }
                 if (tmp is AbstractBehaviour<T>) {

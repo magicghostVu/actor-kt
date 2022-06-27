@@ -119,6 +119,7 @@ object Behaviors {
                     if (debug) {
                         logger.debug("stopped come, cancel the channel")
                     }
+                    timerMan.cancelAll()
                     this.channel.cancel()
                     return@consumeEach
                 }
@@ -134,6 +135,7 @@ object Behaviors {
                     if (debug) {
                         logger.debug("cancel channel after unwrap timer behavior")
                     }
+                    timerMan.cancelAll()
                     this.channel.cancel()
                     return@consumeEach
                 }

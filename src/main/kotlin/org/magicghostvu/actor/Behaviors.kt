@@ -27,7 +27,10 @@ object Behaviors {
     public fun <T> withTimer(doWithTimer: suspend (TimerManData<T>) -> Behavior<T>): Behavior<T> {
         return TimerBehavior(doWithTimer)
     }
-
+    // khi actor bị crash nó sẽ stop scope đã tạo ra actor
+    // vậy nên xem xét mỗi khi tạo actor nên tạo scope mới???
+    // nếu actor được dừng an toàn thì scope sẽ không có affect
+    // nên xem xét quay lại cài đặt cũ khi stop actor thì sẽ stop luôn scope hiện tại
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> CoroutineScope.spawn(debug: Boolean = false, factory: suspend () -> Behavior<T>): MActorRef<T> {
         val internalChannel = actor<Any>(capacity = 10000) {

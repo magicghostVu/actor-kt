@@ -61,6 +61,7 @@ fun main(arr: Array<String>) {
     runBlocking {
         val logger = ActorLogger.logger
         val actorRef = spawn {
+            delay(1000)
             State1(0)
         }
 

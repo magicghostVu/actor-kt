@@ -29,7 +29,7 @@ object Behaviors {
     }
 
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun <T> CoroutineScope.spawn(debug: Boolean = false, factory: () -> Behavior<T>): MActorRef<T> {
+    fun <T> CoroutineScope.spawn(debug: Boolean = false, factory: suspend () -> Behavior<T>): MActorRef<T> {
         val internalChannel = actor<Any>(capacity = 10000) {
 
             val logger = ActorLogger.logger
@@ -109,7 +109,6 @@ object Behaviors {
 
 
                 // kill actor
-                // ghi nhớ rằng nó sẽ kill scope hiện tại
                 // và kill tất cả timer, etc...
                 // we are safe here
                 if (tmp == stopped<T>()) {

@@ -9,7 +9,6 @@ import org.magicghostvu.actor.timer.DelayedMessage
 import org.magicghostvu.actor.timer.SingleTimerData
 import org.magicghostvu.actor.timer.TimerManData
 import org.magicghostvu.mlogger.ActorLogger
-import kotlin.math.log
 
 object Behaviors {
 
@@ -25,7 +24,7 @@ object Behaviors {
     }
 
 
-    public fun <T> withTimer(doWithTimer: (TimerManData<T>) -> Behavior<T>): Behavior<T> {
+    public fun <T> withTimer(doWithTimer: suspend (TimerManData<T>) -> Behavior<T>): Behavior<T> {
         return TimerBehavior(doWithTimer)
     }
 
@@ -39,7 +38,7 @@ object Behaviors {
             var state = factory()
 
 
-            fun unwrapTimerBehavior(timerBehavior: TimerBehavior<T>): Behavior<T> {
+            suspend fun unwrapTimerBehavior(timerBehavior: TimerBehavior<T>): Behavior<T> {
                 var tmp: Behavior<T> = timerBehavior
                 while (tmp is TimerBehavior<T>) {
                     tmp = tmp.timerFunc(timerMan)
@@ -113,8 +112,6 @@ object Behaviors {
                 // ghi nhớ rằng nó sẽ kill scope hiện tại
                 // và kill tất cả timer, etc...
                 // we are safe here
-                // nếu scope này được dùng chung ở đâu đó
-                // thì nên xem xét kỹ lại code
                 if (tmp == stopped<T>()) {
                     if (debug) {
                         logger.debug("stopped come, cancel the channel")

@@ -17,4 +17,4 @@ abstract class AbstractBehaviour<T>() : Behavior<T>() {
     abstract suspend fun onReceive(message: T): Behavior<T>
 }
 
-class TimerBehavior<T>(val timerFunc: (TimerManData<T>) -> Behavior<T>) : Behavior<T>()
+class TimerBehavior<T>(val timerFunc: suspend (TimerManData<T>) -> Behavior<T>) : Behavior<T>()

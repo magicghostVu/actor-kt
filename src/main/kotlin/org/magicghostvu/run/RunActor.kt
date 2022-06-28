@@ -60,7 +60,7 @@ class State2(var d: Double) : AbstractBehaviour<Msg>() {
 fun main(arr: Array<String>) {
     runBlocking {
         val logger = ActorLogger.logger
-        val actorRef = spawn(true) {
+        val actorRef = spawn {
             State1(0)
         }
 

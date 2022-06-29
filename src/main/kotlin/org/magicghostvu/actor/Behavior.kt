@@ -1,6 +1,8 @@
 package org.magicghostvu.actor
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.channels.SendChannel
 import org.magicghostvu.actor.timer.TimerManData
 
@@ -20,3 +22,6 @@ abstract class AbstractBehaviour<T>(protected val scope: CoroutineScope) : Behav
 }
 
 class TimerBehavior<T>(val timerFunc: suspend (TimerManData<T>) -> Behavior<T>) : Behavior<T>()
+
+@OptIn(ObsoleteCoroutinesApi::class)
+class SetUpBehavior<T>(val factory: suspend (ActorScope<T>) -> Behavior<T>) : Behavior<T>()

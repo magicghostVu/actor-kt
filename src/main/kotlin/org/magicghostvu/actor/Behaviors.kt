@@ -3,6 +3,7 @@ package org.magicghostvu.actor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
@@ -10,6 +11,7 @@ import org.magicghostvu.actor.timer.DelayedMessage
 import org.magicghostvu.actor.timer.SingleTimerData
 import org.magicghostvu.actor.timer.TimerManData
 import org.magicghostvu.mlogger.ActorLogger
+import java.lang.management.ManagementFactory
 
 object Behaviors {
 
@@ -30,6 +32,10 @@ object Behaviors {
     }
 
 
+    @OptIn(ObsoleteCoroutinesApi::class)
+    public fun <T> setUp(factory: suspend (ActorScope<T>) -> Behavior<T>): Behavior<T> {
+        return SetUpBehavior(factory)
+    }
 
 
     // theo mặc định khi actor bị crash nó sẽ stop(cancel) scope đã tạo ra actor
@@ -51,21 +57,26 @@ object Behaviors {
             }
         val internalChannel = scopeSpawnActor.actor<Any>(capacity = 10000) {
 
+
             val logger = ActorLogger.logger
 
             val timerMan = TimerManData<T>(this, debug)
             var state = factory()
 
 
-            suspend fun unwrapTimerBehavior(timerBehavior: TimerBehavior<T>): Behavior<T> {
-                var tmp: Behavior<T> = timerBehavior
-                while (tmp is TimerBehavior<T>) {
-                    tmp = tmp.timerFunc(timerMan)
+            suspend fun unwrapBehavior(behavior: Behavior<T>): Behavior<T> {
+                var tmp: Behavior<T> = behavior
+                while (tmp !is AbstractBehaviour<T>) {
+                    if (tmp is TimerBehavior<T>) {
+                        tmp = tmp.timerFunc(timerMan)
+                    } else if (tmp is SetUpBehavior<T>) {
+                        tmp = tmp.factory(this as ActorScope<T>)
+                    }
                 }
                 return tmp
             }
-            if (state is TimerBehavior<T>) {
-                state = unwrapTimerBehavior(state)
+            if (state !is AbstractBehaviour<T>) {
+                state = unwrapBehavior(state)
             }
 
             if (state !is AbstractBehaviour<T>) {
@@ -138,9 +149,8 @@ object Behaviors {
                     return@consumeEach
                 }
 
-                if (tmp is TimerBehavior<T>) {
-                    val tmp2 = tmp as TimerBehavior<T>
-                    tmp = unwrapTimerBehavior(tmp2)
+                if (tmp !is AbstractBehaviour<T>) {
+                    tmp = unwrapBehavior(tmp)
                 }
 
                 // recheck with same and stopped here???

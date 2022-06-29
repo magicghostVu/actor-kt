@@ -74,6 +74,7 @@ class State2(scope: CoroutineScope, var d: Double) : AbstractBehaviour<Msg>(scop
 }
 
 
+@OptIn(ObsoleteCoroutinesApi::class)
 fun main(arr: Array<String>) {
     runBlocking {
         val logger = ActorLogger.logger
@@ -101,9 +102,8 @@ fun main(arr: Array<String>) {
         // khi dùng supervisor thì nó nên được add vào sau context hiện tại
 
         val parent = spawn {
-            Behaviors.withTimer<Msg> {
-                it.startFixedRateTimer(Msg1(), 0, 1000)
-                State1(this, 0)
+            Behaviors.setUp<Msg> {
+
             }
         }
 

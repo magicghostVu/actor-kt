@@ -28,7 +28,7 @@ class State1(scope: CoroutineScope, var i: Int) : AbstractBehaviour<Msg>(scope) 
         if (message is Msg1) {
             i++
             if (!setChild) {
-                child = scope.spawn {
+                child = scope.spawn() {
                     State2(scope, 0.0)
                 }
                 logger.info("set child success")
@@ -42,6 +42,7 @@ class State1(scope: CoroutineScope, var i: Int) : AbstractBehaviour<Msg>(scope) 
             return Behaviors.same()
         } else {
             logger.info("stop parent")
+            //throw IllegalArgumentException("crash parent")
             return Behaviors.stopped()
         }
     }
@@ -59,11 +60,14 @@ class State2(scope: CoroutineScope, var d: Double) : AbstractBehaviour<Msg>(scop
                 logger.info("msg 2 come from {}", message.from)
                 d++
                 logger.info("d is {}", d)
-                Behaviors.stopped()
+
+                throw IllegalArgumentException("crash child")
+                //Behaviors.stopped()
             }
             is Msg3 -> {
                 logger.info("msg 3 come")
-                Behaviors.stopped<Msg>()
+                //Behaviors.stopped<Msg>()
+                throw IllegalArgumentException("crash child")
             }
         }
     }
@@ -96,7 +100,7 @@ fun main(arr: Array<String>) {
 
         // khi dùng supervisor thì nó nên được add vào sau context hiện tại
 
-        val parent = spawn() {
+        val parent = spawn {
             Behaviors.withTimer<Msg> {
                 it.startFixedRateTimer(Msg1(), 0, 1000)
                 State1(this, 0)
@@ -110,11 +114,16 @@ fun main(arr: Array<String>) {
 
         val child = result.await()
         logger.info("received child")
-        launch {
+        launch(SupervisorJob()) {
             while (true) {
                 child.tell(Msg1())
                 delay(1000)
             }
+        }
+
+        launch {
+            delay(5000)
+            child.tell(Msg2("crash child"))
         }
 
         delay(5000)

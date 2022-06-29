@@ -32,10 +32,10 @@ object Behaviors {
 
 
 
-    // theo mặc định khi actor bị crash nó sẽ stop scope đã tạo ra actor
+    // theo mặc định khi actor bị crash nó sẽ stop(cancel) scope đã tạo ra actor
     // khi actor stop an toàn thì sẽ không affect đến scope ban đầu
     // nếu createNewScope = true thì sẽ create một scope mới cho actor kèm với supervisor
-    // actor crash sẽ không gây crash scope ban đầu
+    // actor crash sẽ không gây stop scope ban đầu
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> CoroutineScope.spawn(
         debug: Boolean = false,

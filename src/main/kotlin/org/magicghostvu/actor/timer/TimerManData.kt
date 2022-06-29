@@ -10,7 +10,7 @@ import org.magicghostvu.mlogger.ActorLogger
 // not thread safe
 //các hàm phải được gọi bên trong actor
 @OptIn(ObsoleteCoroutinesApi::class)
-class TimerManData<T>(private val scope: ActorScope<Any>, val debug:Boolean) {
+class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boolean) {
     private val idToTimerData = mutableMapOf<Any, TimerData>()
     private val idToGeneration = mutableMapOf<Any, Int>()
 
@@ -92,7 +92,9 @@ class TimerManData<T>(private val scope: ActorScope<Any>, val debug:Boolean) {
         )
 
         val job = scope.launch {
-            delay(initDelay)
+            if (initDelay > 0) {
+                delay(initDelay)
+            }
             while (true) {
                 scope.channel.send(messageToSend)
                 delay(period)
@@ -126,7 +128,7 @@ class TimerManData<T>(private val scope: ActorScope<Any>, val debug:Boolean) {
 
     public fun cancel(key: Any) {
         removeKey(key, true)
-        if(debug){
+        if (debug) {
             logger.info("timer with key {} canceled", key)
         }
     }

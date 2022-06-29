@@ -1,5 +1,6 @@
 package org.magicghostvu.actor
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 import org.magicghostvu.actor.timer.TimerManData
 
@@ -9,11 +10,12 @@ class MActorRef<in Message>(private val internalChannel: SendChannel<Message>) {
         internalChannel.send(message)
     }
 }
-open class Behavior<in T>{
+
+open class Behavior<in T> {
 
 }
 
-abstract class AbstractBehaviour<T>() : Behavior<T>() {
+abstract class AbstractBehaviour<T>(protected val scope: CoroutineScope) : Behavior<T>() {
     abstract suspend fun onReceive(message: T): Behavior<T>
 }
 

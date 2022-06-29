@@ -29,11 +29,12 @@ object Behaviors {
         return TimerBehavior(doWithTimer)
     }
 
-    // khi actor bị crash nó sẽ stop scope đã tạo ra actor
-    // vậy nên xem xét mỗi khi tạo actor nên tạo scope mới???
-    // nếu actor được dừng an toàn thì scope sẽ không có affect
-    // nên xem xét quay lại cài đặt cũ khi stop actor thì sẽ stop luôn scope hiện tại
-    // nếu createNewScope= true thì sẽ create một scope mới cho actor
+
+
+
+    // theo mặc định khi actor bị crash nó sẽ stop scope đã tạo ra actor
+    // khi actor stop an toàn thì sẽ không affect đến scope ban đầu
+    // nếu createNewScope = true thì sẽ create một scope mới cho actor kèm với supervisor
     // actor crash sẽ không gây crash scope ban đầu
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> CoroutineScope.spawn(
@@ -131,10 +132,9 @@ object Behaviors {
                 // we are safe here
                 if (tmp == stopped<T>()) {
                     if (debug) {
-                        logger.debug("stopped come, cancel the channel")
+                        logger.debug("stopped come, cancel the channel, scope is {}", this)
                     }
-                    timerMan.cancelAll()
-                    this.channel.cancel()
+                    this.cancel()
                     return@consumeEach
                 }
 
@@ -149,8 +149,8 @@ object Behaviors {
                     if (debug) {
                         logger.debug("cancel channel after unwrap timer behavior")
                     }
-                    timerMan.cancelAll()
-                    this.channel.cancel()
+                    //timerMan.cancelAll()
+                    this.cancel()
                     return@consumeEach
                 }
                 if (tmp is AbstractBehaviour<T>) {

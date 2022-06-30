@@ -16,8 +16,8 @@ class MActorRef<in Message>(private val internalChannel: SendChannel<Message>) {
 open class Behavior<in T> {
 
 }
-
-abstract class AbstractBehaviour<T>(protected val scope: CoroutineScope) : Behavior<T>() {
+@OptIn(ObsoleteCoroutinesApi::class)
+abstract class AbstractBehaviour<T>(protected val scope: ActorScope<T>) : Behavior<T>() {
     abstract suspend fun onReceive(message: T): Behavior<T>
 }
 

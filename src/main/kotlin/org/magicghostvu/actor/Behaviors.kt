@@ -43,7 +43,7 @@ object Behaviors {
     // nếu createNewScope = true thì sẽ create một scope mới cho actor kèm với supervisor
     // actor crash sẽ không gây stop scope ban đầu
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun <T> CoroutineScope.spawn(
+    private fun <T> CoroutineScope.spawn(
         debug: Boolean = false,
         createNewScope: Boolean = false,
         factory: suspend () -> Behavior<T>
@@ -66,7 +66,7 @@ object Behaviors {
 
             suspend fun unwrapBehavior(behavior: Behavior<T>): Behavior<T> {
                 var tmp: Behavior<T> = behavior
-                while (tmp !is AbstractBehaviour<T>) {
+                while (tmp is TimerBehavior<T> || tmp is SetUpBehavior<T>) {
                     if (tmp is TimerBehavior<T>) {
                         tmp = tmp.timerFunc(timerMan)
                     } else if (tmp is SetUpBehavior<T>) {
@@ -175,5 +175,21 @@ object Behaviors {
 
         return MActorRef(internalChannel as SendChannel<T>)
     }
+
+
+    fun <T> CoroutineScope.spawnChild(
+        debug: Boolean = false,
+        factory: suspend () -> Behavior<T>
+    ): MActorRef<T> {
+        return spawn(debug, createNewScope = false, factory)
+    }
+
+    fun <T> CoroutineScope.spawnNew(
+        debug: Boolean = false,
+        factory: suspend () -> Behavior<T>
+    ): MActorRef<T> {
+        return spawn(debug, createNewScope = true, factory)
+    }
+
 
 }

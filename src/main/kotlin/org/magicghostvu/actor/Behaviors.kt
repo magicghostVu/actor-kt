@@ -176,8 +176,8 @@ object Behaviors {
         return MActorRef(internalChannel as SendChannel<T>)
     }
 
-
-    fun <T> CoroutineScope.spawnChild(
+    @OptIn(ObsoleteCoroutinesApi::class)
+    fun <T> ActorScope<T>.spawnChild(
         debug: Boolean = false,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {

@@ -1,6 +1,5 @@
 package org.magicghostvu.actor
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.channels.SendChannel

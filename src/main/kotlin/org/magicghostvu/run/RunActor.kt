@@ -124,8 +124,8 @@ fun main(arr: Array<String>) {
         }
         parent.tell(Msg1())
 
-        /*delay(5000)
-        parent.tell(Msg4())*/
+        delay(5000)
+        parent.tell(Msg4())
 
     }
 }

@@ -177,7 +177,7 @@ object Behaviors {
     }
 
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun <T> ActorScope<T>.spawnChild(
+    fun <T> ActorScope<*>.spawnChild(
         debug: Boolean = false,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {

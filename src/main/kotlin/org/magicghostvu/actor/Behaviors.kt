@@ -1,8 +1,6 @@
 package org.magicghostvu.actor
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
@@ -11,7 +9,6 @@ import org.magicghostvu.actor.timer.DelayedMessage
 import org.magicghostvu.actor.timer.SingleTimerData
 import org.magicghostvu.actor.timer.TimerManData
 import org.magicghostvu.mlogger.ActorLogger
-import java.lang.management.ManagementFactory
 
 object Behaviors {
 
@@ -41,7 +38,7 @@ object Behaviors {
     // theo mặc định khi actor bị crash nó sẽ stop(cancel) scope đã tạo ra actor
     // khi actor stop an toàn thì sẽ không affect đến scope ban đầu
     // nếu createNewScope = true thì sẽ create một scope mới cho actor kèm với supervisor
-    // actor crash sẽ không gây stop scope ban đầu
+    // và actor crash sẽ không gây stop scope ban đầu
     @OptIn(ObsoleteCoroutinesApi::class)
     private fun <T> CoroutineScope.spawn(
         debug: Boolean = false,
@@ -58,6 +55,7 @@ object Behaviors {
             }
         val internalChannel = scopeSpawnActor.actor<Any>(capacity = 10000) {
 
+            Dispatchers.Unconfined
 
             val logger = ActorLogger.logger
 
@@ -177,6 +175,9 @@ object Behaviors {
         return MActorRef(internalChannel as SendChannel<T>, name)
     }
 
+    // actor mới này nếu stop an toàn thì không affect đến parent
+    // nếu crash sẽ gây crash parents
+    // parents stop sẽ stop tất cả các con
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> ActorScope<*>.spawnChild(
         debug: Boolean = false,

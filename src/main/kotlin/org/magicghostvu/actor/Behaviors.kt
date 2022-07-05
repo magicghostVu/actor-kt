@@ -46,6 +46,7 @@ object Behaviors {
     private fun <T> CoroutineScope.spawn(
         debug: Boolean = false,
         createNewScope: Boolean = false,
+        name: String,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
         val scopeSpawnActor =
@@ -173,22 +174,24 @@ object Behaviors {
             }
         }
 
-        return MActorRef(internalChannel as SendChannel<T>)
+        return MActorRef(internalChannel as SendChannel<T>, name)
     }
 
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> ActorScope<*>.spawnChild(
         debug: Boolean = false,
+        name: String,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(debug, createNewScope = false, factory)
+        return spawn(debug, createNewScope = false, name, factory)
     }
 
     fun <T> CoroutineScope.spawnNew(
         debug: Boolean = false,
+        name: String,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(debug, createNewScope = true, factory)
+        return spawn(debug, createNewScope = true, name, factory)
     }
 
 

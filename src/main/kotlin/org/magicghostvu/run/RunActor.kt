@@ -30,7 +30,7 @@ class State1(scope: ActorScope<Msg>, var i: Int) : AbstractBehaviour<Msg>(scope)
         if (message is Msg1) {
             i++
             if (!setChild) {
-                child = scope.spawnChild {
+                child = scope.spawnChild(name = "child1") {
                     State2.setup()
                 }
                 logger.info("set child success")
@@ -110,7 +110,7 @@ fun main(arr: Array<String>) {
             }
         }
 
-        val parent = spawnNew<Msg> {
+        val parent = spawnNew<Msg>(name = "actor1") {
             Behaviors.withTimer { timer ->
                 timer.startFixedRateTimer(
                     Msg2("ádasd"),

@@ -53,9 +53,8 @@ object Behaviors {
             } else {
                 this
             }
-        val internalChannel = scopeSpawnActor.actor<Any>(capacity = 10000) {
 
-            Dispatchers.Unconfined
+        val internalChannel = scopeSpawnActor.actor<Any>(capacity = 10000) {
 
             val logger = ActorLogger.logger
 
@@ -177,7 +176,7 @@ object Behaviors {
 
     // actor mới này nếu stop an toàn thì không affect đến parent
     // nếu crash sẽ gây crash parents
-    // parents stop sẽ stop tất cả các con
+    // parents stop(dù có an toàn hay không) sẽ stop tất cả các con
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> ActorScope<*>.spawnChild(
         debug: Boolean = false,

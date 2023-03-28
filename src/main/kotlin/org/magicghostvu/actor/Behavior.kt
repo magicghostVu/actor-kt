@@ -12,7 +12,7 @@ class MActorRef<in Message>(private val internalChannel: SendChannel<Message>, p
         try {
             internalChannel.send(message)
         } catch (e: Exception) {
-            ActorLogger.logger.error("err while send message to actor $name")
+            ActorLogger.logger.error("err while send message $message to actor $name", e)
         }
     }
 }

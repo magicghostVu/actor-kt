@@ -6,7 +6,6 @@ import org.magicghostvu.actor.AbstractBehaviour
 import org.magicghostvu.actor.Behavior
 import org.magicghostvu.actor.Behaviors
 import org.magicghostvu.actor.Behaviors.spawnChild
-import org.magicghostvu.actor.Behaviors.spawnNew
 import org.magicghostvu.actor.MActorRef
 import org.magicghostvu.mlogger.ActorLogger
 
@@ -97,10 +96,44 @@ class State2(scope: ActorScope<Msg>, var d: Double) : AbstractBehaviour<Msg>(sco
 }
 
 
-@OptIn(ObsoleteCoroutinesApi::class)
 fun main(arr: Array<String>) {
     runBlocking {
-        val logger = ActorLogger.logger
+
+
+        val newScope = CoroutineScope(coroutineContext + SupervisorJob())
+
+        newScope.launch {
+            var i = 0
+            while (true) {
+                if (i == 3) {
+                    throw IllegalArgumentException("child crashed")
+                }
+                ActorLogger.logger.info("child scope run")
+                i++
+                delay(2000)
+            }
+        }
+
+        newScope.launch {
+            while (true) {
+                //if (i == 3) {
+                //throw IllegalArgumentException("child crashed")
+                //}
+                ActorLogger.logger.info("child 2 scope run")
+                //i++
+                delay(2000)
+            }
+        }
+
+
+        launch {
+            while (true) {
+                ActorLogger.logger.info("parent scope run")
+                delay(2000)
+            }
+        }
+
+        /*val logger = ActorLogger.logger
 
 
         launch {
@@ -113,7 +146,7 @@ fun main(arr: Array<String>) {
         val parent = spawnNew<Msg>(name = "actor1") {
             Behaviors.withTimer { timer ->
                 timer.startFixedRateTimer(
-                    Msg2("ádasd"),
+                    Msg2("adasd"),
                     0,
                     1000
                 )
@@ -125,7 +158,7 @@ fun main(arr: Array<String>) {
         parent.tell(Msg1())
 
         delay(5000)
-        parent.tell(Msg4())
+        parent.tell(Msg4())*/
 
     }
 }

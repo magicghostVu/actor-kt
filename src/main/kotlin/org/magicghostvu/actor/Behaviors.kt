@@ -1,10 +1,7 @@
 package org.magicghostvu.actor
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ActorScope
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.*
 import org.magicghostvu.actor.timer.DelayedMessage
 import org.magicghostvu.actor.timer.SingleTimerData
 import org.magicghostvu.actor.timer.TimerManData
@@ -41,6 +38,7 @@ object Behaviors {
     // và actor crash sẽ không gây stop scope ban đầu
     @OptIn(ObsoleteCoroutinesApi::class)
     private fun <T> CoroutineScope.spawn(
+        capacity: Int,
         debug: Boolean = false,
         createNewScope: Boolean = false,
         name: String,
@@ -53,8 +51,7 @@ object Behaviors {
             } else {
                 this
             }
-
-        val internalChannel = scopeSpawnActor.actor<Any>(capacity = 10000) {
+        val internalChannel = scopeSpawnActor.actor<Any>(capacity = capacity) {
 
             val logger = ActorLogger.logger
 
@@ -179,19 +176,21 @@ object Behaviors {
     // parents stop(dù có an toàn hay không) sẽ stop tất cả các con
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> ActorScope<*>.spawnChild(
-        debug: Boolean = false,
         name: String,
+        debug: Boolean = false,
+        capacity: Int = Channel.UNLIMITED,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(debug, createNewScope = false, name, factory)
+        return spawn(capacity, debug, createNewScope = false, name, factory)
     }
 
     fun <T> CoroutineScope.spawnNew(
-        debug: Boolean = false,
         name: String,
+        debug: Boolean = false,
+        capacity: Int = Channel.UNLIMITED,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(debug, createNewScope = true, name, factory)
+        return spawn(capacity, debug, createNewScope = true, name, factory)
     }
 
 

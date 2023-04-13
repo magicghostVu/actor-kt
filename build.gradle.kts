@@ -25,5 +25,10 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
+    kotlinOptions.freeCompilerArgs = listOf(
+        "-opt-in=kotlin.RequiresOptIn",
+        "-Xno-call-assertions",
+        "-Xno-receiver-assertions",
+        "-Xno-param-assertions"
+    )
 }

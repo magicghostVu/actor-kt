@@ -28,12 +28,19 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
     }
 
     fun removeKey(key: Any, cancelJob: Boolean) {
-        if (idToTimerData.containsKey(key)) {
+        /*if (idToTimerData.containsKey(key)) {
             val timerData = idToTimerData.getValue(key)
             if (cancelJob) {
                 timerData.job.cancel()
             }
+        }*/
+
+
+        val timerData = idToTimerData[key]
+        if (timerData != null && cancelJob) {
+            timerData.job.cancel()
         }
+
         idToTimerData.remove(key)
         idToGeneration.remove(key)
     }
@@ -48,7 +55,7 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
         // nếu trong launch sẽ bị data race
 
         val expectGeneration = idToGeneration.compute(key) { _, oldValue ->
-            return@compute if (oldValue == null) {
+            if (oldValue == null) {
                 0
             } else {
                 oldValue + 1

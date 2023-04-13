@@ -14,7 +14,7 @@ sealed class Msg
 class Msg1 : Msg()
 class Msg2(val from: String) : Msg()
 class Msg3(val repTo: CompletableDeferred<MActorRef<Msg>>) : Msg()
-class Msg4() : Msg()
+object Msg4 : Msg()
 
 @OptIn(ObsoleteCoroutinesApi::class)
 class State1(scope: ActorScope<Msg>, var i: Int) : AbstractBehaviour<Msg>(scope) {
@@ -87,7 +87,7 @@ class State2(scope: ActorScope<Msg>, var d: Double) : AbstractBehaviour<Msg>(sco
             return Behaviors.withTimer { timer ->
                 timer.startFixedRateTimer(Msg1(), 0, 1000)
 
-                timer.startSingleTimer(Msg4(), 5000)
+                timer.startSingleTimer(Msg4, 5000)
 
                 Behaviors.setUp { State2(it, 0.0) }
             }

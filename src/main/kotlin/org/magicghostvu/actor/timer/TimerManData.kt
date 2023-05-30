@@ -5,6 +5,9 @@ import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.magicghostvu.mlogger.ActorLogger
+import timerExact
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.ExperimentalTime
 
 
 // not thread safe
@@ -80,7 +83,8 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
         return res
     }
 
-    public fun startFixedRateTimer(key: Any, message: T, initDelay: Long, period: Long): TimerData {
+    @OptIn(ExperimentalTime::class)
+    public fun startFixedRateTimer(key: Any, message: T, initDelayMilli: Long, period: Long): TimerData {
         removeKey(key, true)
         // phải lấy generation trước launch
         // nếu trong launch sẽ bị data race
@@ -97,8 +101,7 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
             key,
             expectGeneration
         )
-
-        val job = scope.launch {
+        /*val job = scope.launch {
             if (initDelay > 0) {
                 delay(initDelay)
             }
@@ -106,8 +109,13 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
                 scope.channel.send(messageToSend)
                 delay(period)
             }
+        }*/
+        val job = scope.timerExact(
+            interval = period.milliseconds,
+            startDelay = initDelayMilli.milliseconds,
+        ) {
+            scope.channel.send(messageToSend)
         }
-
         val res = PeriodicTimerData(key, job, this)
         idToTimerData[key] = res
         return res

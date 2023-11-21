@@ -1,11 +1,12 @@
 package org.magicghostvu.actor.timer
 
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.magicghostvu.mlogger.ActorLogger
-import timerExact
+import MTimerUtils.timerExact
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
@@ -13,7 +14,11 @@ import kotlin.time.ExperimentalTime
 // not thread safe
 //các hàm phải được gọi bên trong actor
 @OptIn(ObsoleteCoroutinesApi::class)
-class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boolean) {
+class TimerManData<T> internal constructor(
+    private val scope: ActorScope<Any>,
+    private val debug: Boolean,
+    private val timerExact: Boolean
+) {
     private val idToTimerData = mutableMapOf<Any, TimerData>()
     private val idToGeneration = mutableMapOf<Any, Int>()
 
@@ -22,15 +27,15 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
     // todo: thêm các hàm start single timer/ schedule ...
     //  cancel with key, cancel all...
 
-    public fun keyExist(key: Any): Boolean {
+    internal fun keyExist(key: Any): Boolean {
         return idToGeneration.containsKey(key)
     }
 
-    public fun getCurrentGeneration(key: Any): Int {
+    internal fun getCurrentGeneration(key: Any): Int {
         return idToGeneration.getValue(key)
     }
 
-    fun removeKey(key: Any, cancelJob: Boolean) {
+    internal fun removeKey(key: Any, cancelJob: Boolean) {
         /*if (idToTimerData.containsKey(key)) {
             val timerData = idToTimerData.getValue(key)
             if (cancelJob) {
@@ -52,7 +57,7 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
         return idToTimerData.getValue(key)
     }
 
-    public fun startSingleTimer(key: Any, message: T, delayMillis: Long): TimerData {
+    fun startSingleTimer(key: Any, message: T, delayMillis: Long): TimerData {
         removeKey(key, true)
         // phải lấy generation trước launch
         // nếu trong launch sẽ bị data race
@@ -84,7 +89,7 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
     }
 
     @OptIn(ExperimentalTime::class)
-    public fun startFixedRateTimer(key: Any, message: T, initDelayMilli: Long, period: Long): TimerData {
+    fun startFixedRateTimer(key: Any, message: T, initDelayMilli: Long, period: Long): TimerData {
         removeKey(key, true)
         // phải lấy generation trước launch
         // nếu trong launch sẽ bị data race
@@ -101,38 +106,44 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
             key,
             expectGeneration
         )
-        /*val job = scope.launch {
-            if (initDelay > 0) {
-                delay(initDelay)
-            }
-            while (true) {
+
+        val job: Job = if (timerExact) {
+            scope.timerExact(
+                interval = period.milliseconds,
+                startDelay = initDelayMilli.milliseconds,
+            ) {
                 scope.channel.send(messageToSend)
-                delay(period)
             }
-        }*/
-        val job = scope.timerExact(
-            interval = period.milliseconds,
-            startDelay = initDelayMilli.milliseconds,
-        ) {
-            scope.channel.send(messageToSend)
+        } else {
+            scope.launch {
+                if (initDelayMilli > 0) {
+                    delay(initDelayMilli)
+                }
+                while (true) {
+                    scope.channel.send(messageToSend)
+                    delay(period)
+                }
+            }
         }
+
+
         val res = PeriodicTimerData(key, job, this)
         idToTimerData[key] = res
         return res
     }
 
 
-    public fun startSingleTimer(message: T, delayMillis: Long): TimerData {
+    fun startSingleTimer(message: T, delayMillis: Long): TimerData {
         return startSingleTimer(message as Any, message, delayMillis)
     }
 
 
-    public fun startFixedRateTimer(message: T, initDelay: Long, period: Long): TimerData {
+    fun startFixedRateTimer(message: T, initDelay: Long, period: Long): TimerData {
         return startFixedRateTimer(message as Any, message, initDelay, period)
     }
 
 
-    public fun cancelAll() {
+    fun cancelAll() {
         idToTimerData.values.forEach {
             it.job.cancel()
         }
@@ -141,7 +152,7 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
         logger.info("cancel all called")
     }
 
-    public fun cancel(key: Any) {
+    fun cancel(key: Any) {
         removeKey(key, true)
         if (debug) {
             logger.info("timer with key {} canceled", key)
@@ -150,4 +161,4 @@ class TimerManData<T>(private val scope: ActorScope<Any>, private val debug: Boo
 
 }
 
-data class DelayedMessage<T>(val message: T, val keyTimer: Any, val generationAtCreate: Int)
+internal data class DelayedMessage<T>(val message: T, val keyTimer: Any, val generationAtCreate: Int)

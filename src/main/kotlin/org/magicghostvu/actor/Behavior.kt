@@ -17,7 +17,7 @@ class MActorRef<in Message>(private val internalChannel: SendChannel<Message>, p
     }
 }
 
-open class Behavior<in T> {
+sealed class Behavior<in T> {
 
 }
 
@@ -26,7 +26,11 @@ abstract class AbstractBehaviour<T>(protected val scope: ActorScope<T>) : Behavi
     abstract suspend fun onReceive(message: T): Behavior<T>
 }
 
-class TimerBehavior<T>(val timerFunc: suspend (TimerManData<T>) -> Behavior<T>) : Behavior<T>()
+internal class TimerBehavior<T>(val timerFunc: suspend (TimerManData<T>) -> Behavior<T>) : Behavior<T>()
 
 @OptIn(ObsoleteCoroutinesApi::class)
-class SetUpBehavior<T>(val factory: suspend (ActorScope<T>) -> Behavior<T>) : Behavior<T>()
+internal class SetUpBehavior<T>(val factory: suspend (ActorScope<T>) -> Behavior<T>) : Behavior<T>()
+
+internal object O1: Behavior<Any>()
+
+internal object O2: Behavior<Any>()

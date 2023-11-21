@@ -10,12 +10,12 @@ import org.magicghostvu.mlogger.ActorLogger
 object Behaviors {
 
     // dummy object
-    private val o1 = Behavior<Any>()
+    private val o1 = O1
     public fun <T> same(): Behavior<T> {
         return o1 as Behavior<T>
     }
 
-    private val o2 = Behavior<Any>()
+    private val o2 = O2
     public fun <T> stopped(): Behavior<T> {
         return o2 as Behavior<T>
     }
@@ -41,6 +41,7 @@ object Behaviors {
         capacity: Int,
         debug: Boolean = false,
         createNewScope: Boolean = false,
+        timerExact: Boolean,
         name: String,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
@@ -55,7 +56,7 @@ object Behaviors {
 
             val logger = ActorLogger.logger
 
-            val timerMan = TimerManData<T>(this, debug)
+            val timerMan = TimerManData<T>(this, debug, timerExact)
             var state = factory()
 
 
@@ -119,13 +120,13 @@ object Behaviors {
                 }
 
 
-                if (debug) {
+                /*if (debug) {
                     logger.debug("msg internal come {}", messageToProcess)
-                }
+                }*/
 
 
                 // impossible
-                // but a bug here so we will fix this
+                // but a bug here, so we will fix this
                 //if (state == same<T>()) return@consumeEach
 
 
@@ -179,18 +180,20 @@ object Behaviors {
         name: String,
         debug: Boolean = false,
         capacity: Int = Channel.UNLIMITED,
+        timerExact: Boolean = false,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(capacity, debug, createNewScope = false, name, factory)
+        return spawn(capacity, debug, createNewScope = false, timerExact, name, factory)
     }
 
     fun <T> CoroutineScope.spawnNew(
         name: String,
         debug: Boolean = false,
         capacity: Int = Channel.UNLIMITED,
+        timerExact: Boolean = false,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(capacity, debug, createNewScope = true, name, factory)
+        return spawn(capacity, debug, createNewScope = true, timerExact, name, factory)
     }
 
 

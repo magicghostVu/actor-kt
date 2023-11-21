@@ -1,3 +1,4 @@
+import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -16,7 +17,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.36")
 
     runtimeOnly("ch.qos.logback:logback-classic:1.2.11")
-    testImplementation(kotlin("test"))
+    //testImplementation(kotlin("test"))
 }
 
 tasks.test {
@@ -31,4 +32,10 @@ tasks.withType<KotlinCompile> {
         "-Xno-receiver-assertions",
         "-Xno-param-assertions"
     )
+}
+
+tasks.create<Jar>("source_jar"){
+    dependsOn("classes")
+    archiveClassifier.set("source")
+    from(sourceSets["main"].allSource)
 }

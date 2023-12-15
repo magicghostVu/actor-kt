@@ -52,9 +52,14 @@ object Behaviors {
             } else {
                 this
             }
-        val internalChannel = scopeSpawnActor.actor<Any>(capacity = capacity) {
 
+
+        val futureForInternalScope = CompletableDeferred<CoroutineScope>()
+
+        val internalChannel = scopeSpawnActor.actor<Any>(capacity = capacity) {
             val logger = ActorLogger.logger
+
+            futureForInternalScope.complete(this)
 
             val timerMan = TimerManData<T>(this, debug, timerExact)
             var state = factory()
@@ -169,12 +174,23 @@ object Behaviors {
             }
         }
 
-        return MActorRef(internalChannel as SendChannel<T>, name)
+        return if (createNewScope) {
+            TopLevelActorRef<T>(internalChannel as SendChannel<T>, name)
+        } else {
+            val r = ChildActorRef<T>(internalChannel as SendChannel<T>, name, this)
+            scopeSpawnActor.launch {
+                // set value for scope inside??
+                r.ownScope = futureForInternalScope.await()
+                ActorLogger.logger.info("own scope for children set to {}", r.ownScope)
+            }
+            r
+        }
+
     }
 
     // actor mới này nếu stop an toàn thì không affect đến parent
     // nếu crash sẽ gây crash parents
-    // parents stop(dù có an toàn hay không) sẽ stop tất cả các con
+    // parent stop(dù có an toàn hay không) sẽ stop tất cả các con
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> ActorScope<*>.spawnChild(
         name: String,

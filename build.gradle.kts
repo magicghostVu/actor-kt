@@ -1,23 +1,24 @@
-import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.20"
+    id("maven-publish")
 }
 
 group = "org.magicghostvu"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
     mavenCentral()
 }
 
+//
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
     implementation("org.slf4j:slf4j-api:1.7.36")
 
     runtimeOnly("ch.qos.logback:logback-classic:1.2.11")
-    //testImplementation(kotlin("test"))
+    testImplementation(kotlin("test"))
 }
 
 tasks.test {
@@ -34,8 +35,39 @@ tasks.withType<KotlinCompile> {
     )
 }
 
-tasks.create<Jar>("source_jar"){
+/*tasks.create<Jar>("source_jar") {
     dependsOn("classes")
     archiveClassifier.set("source")
     from(sourceSets["main"].allSource)
+}*/
+java {
+    withSourcesJar()
+    //withJavadocJar()
+}
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username = "phuvh"
+                password = ""
+            }
+            url = uri("http://localhost:3001/releases")
+            isAllowInsecureProtocol = true
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("maven") {
+
+            groupId = "org.magicghostvu"
+            artifactId = "actor-kt"
+            version = "0.1.1-SNAPSHOT"
+
+            from(components["kotlin"])
+            artifact(tasks["sourcesJar"])
+        }
+    }
 }

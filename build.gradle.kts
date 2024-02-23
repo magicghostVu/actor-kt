@@ -49,8 +49,8 @@ publishing {
     repositories {
         maven {
             credentials {
-                username = "phuvh"
-                password = ""
+                username = project.properties.getValue("reposilite.user") as String
+                password = project.properties.getValue("reposilite.password") as String
             }
             url = uri("http://localhost:3001/releases")
             isAllowInsecureProtocol = true

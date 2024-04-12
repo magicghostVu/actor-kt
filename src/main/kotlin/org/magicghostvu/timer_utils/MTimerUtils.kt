@@ -1,3 +1,5 @@
+package org.magicghostvu.timer_utils
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

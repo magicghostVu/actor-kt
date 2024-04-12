@@ -6,7 +6,7 @@ import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.magicghostvu.mlogger.ActorLogger
-import MTimerUtils.timerExact
+import org.magicghostvu.timer_utils.MTimerUtils.timerExact
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 

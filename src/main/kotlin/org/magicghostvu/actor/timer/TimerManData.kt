@@ -6,9 +6,6 @@ import kotlinx.coroutines.channels.ActorScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.magicghostvu.mlogger.ActorLogger
-import org.magicghostvu.timer_utils.MTimerUtils.timerExact
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.ExperimentalTime
 
 
 // not thread safe
@@ -16,8 +13,6 @@ import kotlin.time.ExperimentalTime
 @OptIn(ObsoleteCoroutinesApi::class)
 class TimerManData<T> internal constructor(
     private val scope: ActorScope<Any>,
-    private val debug: Boolean,
-    private val timerExact: Boolean
 ) {
     private val idToTimerData = mutableMapOf<Any, TimerData>()
     private val idToGeneration = mutableMapOf<Any, Int>()
@@ -53,7 +48,7 @@ class TimerManData<T> internal constructor(
         idToGeneration.remove(key)
     }
 
-    public fun getTimerData(key: Any): TimerData {
+    internal fun getTimerData(key: Any): TimerData {
         return idToTimerData.getValue(key)
     }
 
@@ -88,7 +83,6 @@ class TimerManData<T> internal constructor(
         return res
     }
 
-    @OptIn(ExperimentalTime::class)
     fun startFixedRateTimer(key: Any, message: T, initDelayMilli: Long, period: Long): TimerData {
         removeKey(key, true)
         // phải lấy generation trước launch
@@ -107,22 +101,13 @@ class TimerManData<T> internal constructor(
             expectGeneration
         )
 
-        val job: Job = if (timerExact) {
-            scope.timerExact(
-                interval = period.milliseconds,
-                startDelay = initDelayMilli.milliseconds,
-            ) {
-                scope.channel.send(messageToSend)
+        val job: Job = scope.launch {
+            if (initDelayMilli > 0) {
+                delay(initDelayMilli)
             }
-        } else {
-            scope.launch {
-                if (initDelayMilli > 0) {
-                    delay(initDelayMilli)
-                }
-                while (true) {
-                    scope.channel.send(messageToSend)
-                    delay(period)
-                }
+            while (true) {
+                scope.channel.send(messageToSend)
+                delay(period)
             }
         }
 
@@ -149,14 +134,12 @@ class TimerManData<T> internal constructor(
         }
         idToTimerData.clear()
         idToGeneration.clear()
-        logger.info("cancel all called")
+        logger.debug("cancel all called")
     }
 
     fun cancel(key: Any) {
         removeKey(key, true)
-        if (debug) {
-            logger.info("timer with key {} canceled", key)
-        }
+        logger.debug("timer with key {} canceled", key)
     }
 
 }

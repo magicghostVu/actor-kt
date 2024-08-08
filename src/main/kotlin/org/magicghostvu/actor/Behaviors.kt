@@ -39,9 +39,7 @@ object Behaviors {
     @OptIn(ObsoleteCoroutinesApi::class)
     private fun <T> CoroutineScope.spawn(
         capacity: Int,
-        debug: Boolean = false,
         createNewScope: Boolean = false,
-        timerExact: Boolean,
         name: String,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
@@ -61,7 +59,7 @@ object Behaviors {
 
             futureForInternalScope.complete(this)
 
-            val timerMan = TimerManData<T>(this, debug, timerExact)
+            val timerMan = TimerManData<T>(this)
             var state = factory()
 
 
@@ -93,19 +91,14 @@ object Behaviors {
                     val (msg, key, genFromMessage) = dMsg
                     if (!timerMan.keyExist(key)) {
                         // timer này đã bị huỷ, không xử lý message này
-                        if (debug) {
-                            logger.debug("msg {} come but key not exist, ignore", msg)
-                        }
-
+                        logger.debug("msg {} come but key not exist, ignore", msg)
                         return@consumeEach
                     }
                     val currentGenThisKey = timerMan.getCurrentGeneration(key)
                     // timer này bị huỷ khi message đã được gửi
                     // không xử lý
                     if (currentGenThisKey != genFromMessage) {
-                        if (debug) {
-                            logger.debug("msg {} come but generation outdated, ignore", msg)
-                        }
+                        logger.debug("msg {} come but generation outdated, ignore", msg)
                         return@consumeEach
                     }
 
@@ -125,11 +118,6 @@ object Behaviors {
                 }
 
 
-                /*if (debug) {
-                    logger.debug("msg internal come {}", messageToProcess)
-                }*/
-
-
                 // impossible
                 // but a bug here, so we will fix this
                 //if (state == same<T>()) return@consumeEach
@@ -143,9 +131,7 @@ object Behaviors {
                 // và kill tất cả timer, etc...
                 // we are safe here
                 if (tmp == stopped<T>()) {
-                    if (debug) {
-                        logger.debug("stopped come, cancel the channel, scope is {}", this)
-                    }
+                    logger.debug("stopped come, cancel the channel, scope is {}", this)
                     this.cancel()
                     return@consumeEach
                 }
@@ -157,10 +143,7 @@ object Behaviors {
                 // recheck with same and stopped here???
                 // sau chỗ này state bắt buộc phải là AbstractBehavior
                 if (tmp == stopped<T>()) {
-                    if (debug) {
-                        logger.debug("cancel channel after unwrap timer behavior")
-                    }
-                    //timerMan.cancelAll()
+                    logger.debug("cancel channel after unwrap timer behavior")
                     this.cancel()
                     return@consumeEach
                 }
@@ -181,7 +164,7 @@ object Behaviors {
             scopeSpawnActor.launch {
                 // set value for scope inside??
                 r.ownScope = futureForInternalScope.await()
-                ActorLogger.logger.info("own scope for children set to {}", r.ownScope)
+                ActorLogger.logger.debug("own scope for children set to {}", r.ownScope)
             }
             r
         }
@@ -194,22 +177,18 @@ object Behaviors {
     @OptIn(ObsoleteCoroutinesApi::class)
     fun <T> ActorScope<*>.spawnChild(
         name: String,
-        debug: Boolean = false,
         capacity: Int = Channel.UNLIMITED,
-        timerExact: Boolean = false,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(capacity, debug, createNewScope = false, timerExact, name, factory)
+        return spawn(capacity, createNewScope = false, name, factory)
     }
 
     fun <T> CoroutineScope.spawnNew(
         name: String,
-        debug: Boolean = false,
         capacity: Int = Channel.UNLIMITED,
-        timerExact: Boolean = false,
         factory: suspend () -> Behavior<T>
     ): MActorRef<T> {
-        return spawn(capacity, debug, createNewScope = true, timerExact, name, factory)
+        return spawn(capacity, createNewScope = true, name, factory)
     }
 
 

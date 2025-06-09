@@ -5,8 +5,6 @@ plugins {
     id("maven-publish")
 }
 
-group = "org.magicghostvu"
-version = "1.0"
 
 repositories {
     mavenCentral()
@@ -47,13 +45,11 @@ java {
 publishing {
     repositories {
         maven {
-            credentials(HttpHeaderCredentials::class.java) {
-                name = "Private-Token"
-                value = project.properties.getValue("deploy.token") as String
-            }
-            url = uri("")
-            authentication {
-                create<HttpHeaderAuthentication>("header")
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/magicghostVu/actor-kt")
+            credentials {
+                username = "magicghostVu"
+                password = project.properties.getValue("github.deploy.token") as String
             }
         }
     }
@@ -62,7 +58,7 @@ publishing {
 
             groupId = "org.m.magicghostvu"
             artifactId = "actor-kt"
-            version = "0.1.2-SNAPSHOT"
+            version = "0.2"
 
             from(components["kotlin"])
             artifact(tasks["sourcesJar"])
